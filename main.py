@@ -1,8 +1,9 @@
 from datetime import datetime, timedelta
+import time
 
 from picamzero import Camera # type: ignore
-from astro_pi_orbit import ISS # type: ignore
-from sklearn.metrics.pairwise import haversine_distances # type: ignore
+from astro_pi_orbit import ISS
+from sklearn.metrics.pairwise import haversine_distances
 
 import image_parser
 import consts
@@ -30,14 +31,21 @@ def main():
         image_data = image_parser.extract_image_data(file_name)
 
         if prev_image:
-            distance = haversine_distances(image_data[0], prev_image[0]) * consts.EARTH_RADIUS
-            time = image_data[1] - image_data[0]
+            print(image_data[0], prev_image[0])
+            distance = haversine_distances([image_data[0], prev_image[0]]) * consts.EARTH_RADIUS
+            time = timedelta.total_seconds(image_data[1] - prev_image[1])
             speed = distance/time
             total_speed += speed
             print(total_speed/(images_taken-1))
 
         prev_image = image_data
+        time.sleep(1)
         now_time = datetime.now()
+
+def write_data(total_velocity, images_taken):
+    with open("results.txt", "w", buffering=1) as results:
+        result=total_velocity/(images_taken-1)
+        results.write(result)
 
 def get_gps_coordinates(iss):
     """

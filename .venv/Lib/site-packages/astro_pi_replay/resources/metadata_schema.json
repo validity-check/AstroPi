@@ -1,0 +1,145 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://astro-pi.org/astro-pi-replay/schemas/v1.1.0.json",
+  "title": "Asset metadata schema",
+  "description": "A product in the catalog",
+  "type": "object",
+  "properties": {
+    "altitude_average_km": {
+      "description": "The average altitude the ISS flew at when the assets were captured, in kilometres",
+      "type": "integer"
+    },
+    "camera": {
+      "type": "object",
+      "properties": {
+	"name": {
+	  "description": "The name of the camera used e.g. Sony IMX477",
+	  "type": "string"
+	},
+	"sensor_size_x": {
+	  "description": "The sensor size in the x direction e.g. 6.287mm",
+	  "type": "string"
+	},
+	"sensor_size_y": {
+	  "description": "The sensor size in the y direction e.g. 4.712mm",
+	  "type": "string"
+	},
+	"sensor_resolution_x": {
+	  "description": "The sensor resolution (in pixels) in the x direction e.g. 4056",
+	  "type": "integer"
+	},
+	"sensor_resolution_y": {
+	  "description": "The sensor resolution (in pixels) in the y direction e.g. 3040",
+	  "type": "integer"
+	}
+      },
+      "required": [
+	"sensor_size_x",
+	"sensor_size_y",
+	"sensor_resolution_x",
+	"sensor_resolution_y"
+      ]
+    },
+    "lens": {
+      "type": "object",
+      "properties": {
+	"name": {
+	  "description": "The name of the lens used to capture the photos",
+	  "type": "string"
+	},
+	"focal_length": {
+	  "description": "The focal length of the lens e.g. 5mm",
+	  "type": "string"
+	}
+      },
+      "required": ["focal_length"]
+    },
+    "ground_sampling_distance_cm": {
+      "description": "The ground sampling distance (GSD) of the images in centimetres",
+      "type": "integer"
+    },
+    "resolution_x": {
+      "description": "The image resolution in the x direction e.g. 4056",
+      "type": "integer"
+    },
+    "resolution_y": {
+      "description": "The image resolution in the y direction e.g. 3040",
+      "type": "integer"
+    },
+    "tle": {
+      "description": "The two-line-element (TLE) file to use to locate the ISS",
+      "type": "object",
+      "properties": {
+        "file": {
+	  "type": "string",
+	  "description": "The POSIX filepath to the TLE file relative to the kkkm directory"
+	},
+	"sha256sum": {
+	  "type": "string",
+	  "description": "The SHA256 checksum of the TLE file"
+	}
+      },
+      "required": ["file", "sha256sum"]
+    },
+    "start": {
+      "description": "The time the data capture run started e.g. 2023-04-25 08:14:42.873624",
+      "type": "string",
+      "format": "date-time"
+    },
+    "end": {
+      "description": "The time the data capture run ended e.g. 2023-04-25 08:25:57.205601",
+      "type": "string",
+      "format": "date-time"
+    },
+    "team_credits": {
+      "description": "The name of the team whose code was used to capture the data",
+      "type": "string"
+    },
+    "credits": {
+      "description": "The person or organisation credited with capturing the data",
+      "type": "string"
+    },
+    "photography_type": {
+      "description": "The type of photography used - VIS or IR",
+      "type": "string"
+    },
+    "photos": {
+      "type": "object",
+      "properties": {
+        "prefix": {
+	  "description": "The prefix of each image file e.g 'img_'",
+	  "type": "string"
+	},
+	"suffix": {
+	  "description": "The suffix of each image file e.g 'jpg'",
+	  "type": "string"
+	},
+	"isZeroIndexed": {
+	  "description": "Whether the images are zero-indexed",
+	  "type": "boolean"
+	}
+      },
+      "required": ["prefix", "suffix", "isZeroIndexed"]
+    },
+    "video": {
+      "description": "The filename of the video e.g. 'video.mp4'",
+      "type": "string"
+    }
+  },
+  "oneOf": [
+    { "required": ["team_credits"] },
+    { "required": ["credits"] }
+  ],
+  "required": [
+    "camera",
+    "ground_sampling_distance_cm",
+    "resolution_x",
+    "resolution_y",
+    "tle",
+    "start",
+    "end",
+    "photography_type",
+    "photos",
+    "video"
+  ]
+}

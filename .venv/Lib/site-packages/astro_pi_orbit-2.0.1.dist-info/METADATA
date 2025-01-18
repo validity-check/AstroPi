@@ -1,0 +1,51 @@
+Metadata-Version: 2.1
+Name: astro_pi_orbit
+Version: 2.0.1
+Summary: Module for interfacing with the Astro Pi
+Author-email: Ben Nuttall <ben@bennuttall.com>, George Boukeas <boukeas@gmail.com>, Geraint Ballinger <G3zz@users.noreply.github.com>
+License: MIT License
+        
+        Copyright (c) 2024 Raspberry Pi Foundation
+        
+        Permission is hereby granted, free of charge, to any person obtaining a copy
+        of this software and associated documentation files (the "Software"), to deal
+        in the Software without restriction, including without limitation the rights
+        to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+        copies of the Software, and to permit persons to whom the Software is
+        furnished to do so, subject to the following conditions:
+        
+        The above copyright notice and this permission notice shall be included in all
+        copies or substantial portions of the Software.
+        
+        THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+        IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+        FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+        AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+        LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+        OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+        SOFTWARE.
+        
+        
+Classifier: Programming Language :: Python :: 3
+Classifier: Operating System :: OS Independent
+Requires-Python: >=3.7
+Description-Content-Type: text/markdown
+License-File: LICENSE
+Requires-Dist: skyfield
+
+# astro_pi_orbit
+
+The `astro_pi_orbit` library provides functionality to assist Astro Pi Mission Space Lab participants in working with orbital data.
+
+Documentation is available at [docs](./docs).
+
+## Contributing
+
+We welcome all contributions!
+Please install and run the dependencies in `requirements-dev.txt`, and run `pre-commit` prior to opening a PR. On Unix, `pre-commit` can be installed by running the following:
+
+```bash
+pip install pre-commit
+pre-commit install
+```
+

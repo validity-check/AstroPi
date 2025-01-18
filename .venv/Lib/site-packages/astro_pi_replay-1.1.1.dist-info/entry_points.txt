@@ -1,0 +1,2 @@
+[console_scripts]
+Astro-Pi-Replay = astro_pi_replay.main:main

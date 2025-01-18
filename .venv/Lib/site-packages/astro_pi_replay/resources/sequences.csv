@@ -1,0 +1,5 @@
+sequence_id,resolution,photography_type,window
+kkkm,4056x3040,VIS,NODE
+AstroX,4056x3040,VIS,WORF
+OrbitAz,1280x720,VIS,WORF
+test_data,4056x3040,VIS,WORF
