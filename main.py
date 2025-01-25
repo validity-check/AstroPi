@@ -34,7 +34,9 @@ def main():
     # Core timed 10 minute loop
     # Ensures program operates within time and photo limits
     while now_time < start_time +  timedelta(minutes=10) and images_taken <= 41:
-        file_name = BASE_FOLDER + ("\\image%s.jpg" % str(images_taken))
+        # file_name = BASE_FOLDER + ("\\image%s.jpg" % str(images_taken))
+        file_name = "\\image%s.jpg" % str(images_taken)
+        print(file_name)
         # Assign GPS coordinates of ISS to image we are taking
         cam.take_photo(file_name, gps_coordinates=get_gps_coordinates(iss))
         images_taken +=1
@@ -86,6 +88,8 @@ def dms_to_rad(dms):
     Converts signed degrees minutes seconds to radians.
     """
     (d, m, s) = dms
+    # Formula dms-> dd: d + m/60 + s/3600
+    # The math module converts to radians
     rad = radians(d + float(m)/60 + float(s)/3600)
     return rad
 
