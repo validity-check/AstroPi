@@ -23,8 +23,7 @@ from astro_pi_replay.executor import AstroPiExecutor
 from astro_pi_replay.libcamera import controls
 from astro_pi_replay.picamzero.ImageWrapper import ImageWrapper
 from astro_pi_replay.picamzero.PicameraZeroException import PicameraZeroException
-from astro_pi_replay.resources import get_replay_sequence_dir
-from astro_pi_replay.resources.utils import get_video
+from astro_pi_replay.resources.downloader import get_replay_sequence_dir, get_video
 
 from . import utilities as utils
 
@@ -33,11 +32,13 @@ logging.basicConfig(format="%(levelname)s:%(message)s", level=logging.WARN)
 
 GPS_IFD_CODE: int = 0x8825
 
+
 @dataclasses.dataclass
 class Overlay:
     image: ImageWrapper
-    position: tuple[int,int]
+    position: tuple[int, int]
     transparency: float
+
 
 def decorate_all_non_magic_methods(decorator):
     """
@@ -195,8 +196,10 @@ def CameraAdapter(
             self, final_filename: str, start: datetime, duration: float
         ) -> None:
             # calculate the time since the replay started
-            delta: timedelta = start - executor._state._start_time
+            delta: timedelta = start - executor._state.get_start_time()
             video: Path = get_video()
+            if not video.exists():
+                executor._get_downloader().fetch_sequence_file(video)
 
             if not executor._has_ffmpeg:
                 raise FfmpegNotInstalledException(
@@ -543,9 +546,7 @@ def CameraAdapter(
                 overlay_img = overlay_img.fromarray(overlay_array)
 
             self._overlay = Overlay(
-                image=overlay_img,
-                position=position,
-                transparency=transparency
+                image=overlay_img, position=position, transparency=transparency
             )
 
         def take_video_and_still(
@@ -603,6 +604,8 @@ def CameraAdapter(
             )
 
             image_path: Path = get_replay_sequence_dir() / "photos" / name
+            if not image_path.exists():
+                executor._get_downloader().fetch_sequence_file(image_path)
             im: ImageWrapper = ImageWrapper(image_path)
 
             if self._overlay:
@@ -780,9 +783,11 @@ def CameraAdapter(
                 )
 
             video: Path = get_video()
+            if not video.exists():
+                executor._get_downloader().fetch_sequence_file(video)
 
             # calculate the time since the replay started
-            delta: timedelta = datetime.now() - executor._state._start_time
+            delta: timedelta = datetime.now() - executor._state.get_start_time()
             cmd: list[str] = [
                 "ffmpeg",
                 "-ss",

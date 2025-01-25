@@ -41,6 +41,7 @@ class Configuration:
     sense_hat_snapshot_dir: Path
     astro_pi_replay_version: str
     is_transparent_to_user: bool
+    streaming_mode: bool
 
     @staticmethod
     def _from_json(jstr: str) -> "Configuration":
@@ -61,6 +62,7 @@ class Configuration:
             args.sense_hat_snapshot_dir,
             __version__,
             args.is_transparent_to_user,
+            args.streaming_mode,
         )
 
     @staticmethod

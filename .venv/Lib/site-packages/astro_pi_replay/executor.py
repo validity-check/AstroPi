@@ -30,6 +30,8 @@ from astro_pi_replay.resources import (
     get_replay_sequence_dir,
     get_start_time,
 )
+from astro_pi_replay.resources.downloader import Downloader
+from astro_pi_replay.resources.timed_downloader import TimedDownloader
 from astro_pi_replay.venv_resolver import VenvResolver
 
 logger = logging.getLogger(__name__)
@@ -51,6 +53,11 @@ class AstroPiExecutorState:
         self._start_time: datetime = datetime.now()
         self._sense_hat_snapshot_index: int = 1
         self._picamera_instances_count: int = 0
+        # the time spent waiting for the network
+        self._network_time: float = 0
+
+    def get_start_time(self) -> datetime:
+        return timedelta(seconds=self._network_time) + self._start_time
 
 
 class AstroPiExecutor:
@@ -67,7 +74,12 @@ class AstroPiExecutor:
     """
 
     MODULES_TO_STUB: list[str] = [
-        "sense_hat", "picamera", "orbit", "picamzero", "astro_pi_orbit"]
+        "sense_hat",
+        "picamera",
+        "orbit",
+        "picamzero",
+        "astro_pi_orbit",
+    ]
     NOT_FOUND = f"{PROGRAM_CMD_NAME} not found"
 
     """
@@ -84,6 +96,7 @@ class AstroPiExecutor:
         replay_mode: bool = True,
         state: Optional[AstroPiExecutorState] = None,
         configuration: Optional[Configuration] = None,
+        downloader: Optional[Downloader] = None,
     ) -> "AstroPiExecutor":
         """
         datetime_format example: 2022-01-31 12:21:15.123456
@@ -109,16 +122,11 @@ class AstroPiExecutor:
             )
             # Set in (astro-pi-replay-online) to alter some error messages
             cls.is_running_in_browser: bool = False
+            cls.downloader = downloader
         else:
             logger.debug("Executor already instantiated")
 
         return cls._instance
-
-    def picamera_replay(self) -> Callable:
-        """
-        Decorator used to conditionally replay photos from file for the PiCamera
-        """
-        return lambda: 1
 
     def sense_hat_replay(self, *args, **kwargs) -> Callable:
         """
@@ -185,7 +193,7 @@ class AstroPiExecutor:
         the first_time given. The elapsed time is therefore relative to
         the input.
         """
-        start_time: datetime = self._state._start_time
+        start_time: datetime = self._state.get_start_time()
         logger.debug(f"Start_time: {start_time}")
         now: datetime = datetime.now()
         # TODO manually code the first call to return index 0 to not
@@ -228,7 +236,9 @@ class AstroPiExecutor:
             logger.debug(f"Actual time: {actual_time}")
             actual_delta: int = (actual_time - first_time).total_seconds()
             logger.debug(f"Actual delta: {actual_delta}")
-            cutoff: datetime = self._state._start_time + timedelta(seconds=actual_delta)
+            cutoff: datetime = self._state.get_start_time() + timedelta(
+                seconds=actual_delta
+            )
             logger.debug(f"Cutoff: {cutoff}")
             delta = (cutoff - datetime.now()).total_seconds()
             logger.debug(f"Replay delta: {delta}")
@@ -257,6 +267,14 @@ class AstroPiExecutor:
 
     def _get_first_time(self, df: pd.DataFrame):
         return df.iloc[0].name
+
+    def _add_network_time(self, network_time: float) -> None:
+        self._state._network_time += network_time
+
+    def _get_downloader(self) -> Downloader:
+        if self.downloader is None:
+            self.downloader = TimedDownloader(self._add_network_time)
+        return self.downloader
 
     def _interpolate(
         self, datetime_col: str, col_names: list[str], df: pd.DataFrame
@@ -301,13 +319,18 @@ class AstroPiExecutor:
         reducer: Callable[[pd.DataFrame], object] = lambda s: s.iloc[0],
         allow_interpolation: bool = True,
     ) -> object:
-        """Internal method that opens the given filename and
-        returns the given col names, using the reducer. In effect,
-        this replays the data.
+        """Internal method that opens the given filename,
+        downloading it if required, and returns the given col names,
+        using the reducer. In effect, this replays the data.
 
         allow_interpolation: Whether to respect the interpolate_sense_hat
         variable.
         """
+
+        file_path: Path = Path(filename)
+        if not file_path.exists() and self.configuration.streaming_mode:
+            # download the file
+            self._get_downloader().fetch_sequence_file(file_path)
 
         df = self._df_from_replay_file(filename, datetime_col)
 
@@ -355,7 +378,7 @@ class AstroPiExecutor:
     def time_since_start(self) -> datetime:
         """Time relative to the original start time, as specified
         in the metadata.json file"""
-        execution_start_time: datetime = self._state._start_time
+        execution_start_time: datetime = self._state.get_start_time()
         now: datetime = datetime.now()
         delta: timedelta = now - execution_start_time
 

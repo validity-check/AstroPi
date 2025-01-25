@@ -427,7 +427,7 @@ def PiCameraAdapter(
             # Start streaming to the output in real-time
 
             delta: datetime.timedelta = (
-                datetime.datetime.now() - executor._state._start_time
+                datetime.datetime.now() - executor._state.get_start_time()
             )
             vcodec = self.__get_vcodec(final_format)
 

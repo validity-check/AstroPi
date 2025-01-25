@@ -10,7 +10,7 @@ from skyfield.toposlib import GeographicPosition
 
 from astro_pi_replay.executor import AstroPiExecutor
 
-from .telemetry import ISS as _ISS
+from .telemetry import ISS as _ISS, get_tle
 from .telemetry import _timescale, coordinates
 
 
@@ -58,6 +58,12 @@ def get_patched_iss(
     """
     if executor is None:
         executor = AstroPiExecutor()
+
+    # when in streaming mode, the TLE file may not yet have been
+    # downloaded
+    if executor.configuration.streaming_mode:
+        if not get_tle(download_metadata=True).exists():
+            executor._get_downloader().fetch_sequence_file(get_tle())
 
     b = _ISS()
     b.__class__ = EarthSatellite

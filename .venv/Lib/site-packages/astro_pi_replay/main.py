@@ -12,10 +12,10 @@ from requests.exceptions import ConnectionError, HTTPError, RequestException, Ti
 from astro_pi_replay import LOGGING_FORMAT, PROGRAM_CMD_NAME, PROGRAM_NAME, __version__
 from astro_pi_replay.configuration import Configuration
 from astro_pi_replay.custom_types import ExecutionMode
-from astro_pi_replay.downloader import Downloader
 from astro_pi_replay.exception import AstroPiReplayRuntimeError
 from astro_pi_replay.executor import AstroPiExecutor
-from astro_pi_replay.resources import get_resource
+from astro_pi_replay.resources import Downloader, get_resource
+from astro_pi_replay.resources.downloader import has_installed, search_for_sequence
 from astro_pi_replay.self_updater import SelfUpdater
 
 logger = logging.getLogger(__name__)
@@ -153,6 +153,13 @@ def get_argument_parser() -> ArgumentParser:
         + "implemented by the replay tool. By default, the replay tool continues "
         + "silently (as if it were in transparent).",
     )
+    run_parser.add_argument(
+        "--streaming-mode",
+        action="store_true",
+        default=False,
+        help="Stream the image assets from storage instead "
+        + "of bulk downloading prior to running",
+    )
     run_parser.set_defaults(cmd="run")
     update_parser = subparsers.add_parser(
         UPDATE_CMD, help="Check for updates to the Astro-Pi-Replay tool and update."
@@ -203,12 +210,12 @@ async def _main(args: Namespace) -> None:
                     logger.debug(f"Could not check for sequence " f"override file: {e}")
                     logger.exception(e)
 
-                args.sequence = downloader.search_for_sequence(
+                args.sequence = search_for_sequence(
                     args.resolution, args.photography_type
                 )
                 logger.debug(f"Selected {args.sequence}")
 
-            if not downloader.has_installed(
+            if not args.streaming_mode and not has_installed(
                 args.resolution, args.photography_type, args.sequence
             ):
                 try:
