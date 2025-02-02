@@ -1,0 +1,86 @@
+Metadata-Version: 2.2
+Name: astro_pi_replay
+Version: 1.2.0
+Summary: A CLI to replay historic data from previous ISS missions.
+Author-email: Geraint Ballinger <geraint.ballinger@raspberrypi.org>
+License: Copyright 2023- Raspberry Pi Foundation
+        
+        Redistribution and use in source and binary forms, with or without
+        modification, are permitted provided that the following conditions are met:
+        
+            * Redistributions of source code must retain the above copyright
+              notice, this list of conditions and the following disclaimer.
+        
+            * Redistributions in binary form must reproduce the above copyright
+              notice, this list of conditions and the following disclaimer in the
+              documentation and/or other materials provided with the distribution.
+        
+            * Neither the name of the copyright holder nor the
+              names of its contributors may be used to endorse or promote products
+              derived from this software without specific prior written permission.
+        
+        THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+        AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+        IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+        ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
+        LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+        CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+        SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+        INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+        CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+        ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+        POSSIBILITY OF SUCH DAMAGE.
+        
+Project-URL: Homepage, https://github.com/astro-pi/Astro-Pi-Replay
+Classifier: Programming Language :: Python :: 3
+Classifier: Operating System :: OS Independent
+Requires-Python: >=3.9
+Description-Content-Type: text/markdown
+License-File: LICENCE.txt
+Requires-Dist: colorzero>=2.0
+Requires-Dist: pandas>=2.1.1; sys_platform == "emscripten"
+Requires-Dist: pandas==2.1.1; sys_platform != "emscripten" and python_version >= "3.12"
+Requires-Dist: pandas==2.0.3; sys_platform != "emscripten" and python_version < "3.12"
+Requires-Dist: Pillow>=10.0.0; sys_platform == "emscripten"
+Requires-Dist: Pillow==10.0.0; sys_platform != "emscripten"
+Requires-Dist: requests>=2.31
+Requires-Dist: skyfield>=1.46
+Requires-Dist: typing_extensions>=4.7.1
+Requires-Dist: tqdm>=4.66.0
+Requires-Dist: setuptools>=61.0
+Requires-Dist: scipy>=1.11.2; python_version >= "3.11"
+Requires-Dist: scipy==1.8.1; python_version < "3.11"
+Requires-Dist: exif>=1.6.0
+Requires-Dist: numpy>=1.26.0; sys_platform == "emscripten"
+Requires-Dist: numpy==1.26.0; sys_platform != "emscripten" and python_version >= "3.12"
+Requires-Dist: numpy==1.24.3; sys_platform != "emscripten" and python_version < "3.12"
+Requires-Dist: piexif==1.1.3
+Requires-Dist: opencv-python~=4.6
+
+![Build and test workflow](https://github.com/astro-pi/Astro-Pi-Replay/actions/workflows/build_and_test_scheduler.yml/badge.svg?branch=main)
+![Build and test workflow](https://github.com/astro-pi/Astro-Pi-Replay/actions/workflows/build_and_test_worker.yml/badge.svg?branch=main)
+
+# Astro Pi Replay
+
+A CLI to replay historic data from previous ISS missions.
+
+All function calls from the `picamera`, `picamera2`, `sense_hat`, `skyfield`, and `orbit` libraries
+will be mocked to return data from an historic run from the ISS, rather than from attached hardware.
+This allows teams to test their code with representative data and provide a confidence boost that
+their code will work
+
+## Quickstart
+
+Change to your project directory (`cd my-project`), install `Astro-Pi-Replay` using `pip`, and then run your program with `Astro-Pi-Replay run main.py`.
+
+For more detailed installation instructions, checkout the docs site.
+
+This will prepare a sequence of near-infrared images (NIR) images, together with the corresponding
+data collected from the Sense Hat, to be returned by all calls to `picamera`, `sense_hat`, etc.
+The CLI allows for some configuration of this behaviour - see the [Documentation](#documentation) for more details.
+
+## Documentation
+
+See the [docs](../docs) page.
+
+
