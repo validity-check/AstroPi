@@ -2,7 +2,7 @@ from datetime import datetime, timedelta
 from time import sleep
 from exif import Image
 from math import radians
-import os
+from logzero import logger, logfile
 
 from picamzero import Camera # type: ignore
 # from astro_pi_orbit import ISS
@@ -11,8 +11,7 @@ from orbit import ISS
 from sklearn.metrics.pairwise import haversine_distances
 
 
-# Constant values
-BASE_FOLDER = os.path.abspath(os.getcwd())
+# Constant value
 EARTH_RADIUS = 6371
 
 def main():
@@ -21,6 +20,9 @@ def main():
     # Create a variable to store the current time
     # (these will be almost the same at the start)
     now_time = datetime.now()
+
+    # Set up a logfile to store logs
+    logfile("./logfile.log")
 
     cam = Camera()
     iss = ISS()
@@ -35,8 +37,8 @@ def main():
     # Ensures program operates within time and photo limits
     while now_time < start_time +  timedelta(minutes=10) and images_taken <= 41:
         # file_name = BASE_FOLDER + ("\\image%s.jpg" % str(images_taken))
-        file_name = "\\image%s.jpg" % str(images_taken)
-        print(file_name)
+        file_name = ".\\image%s.jpg" % str(images_taken)
+        logger.info(file_name)
         # Assign GPS coordinates of ISS to image we are taking
         cam.take_photo(file_name, gps_coordinates=get_gps_coordinates(iss))
         images_taken +=1
@@ -44,14 +46,22 @@ def main():
         image_data = extract_image_data(file_name)
 
         if prev_image:
-            print(image_data[0], prev_image[0])
+            logger.info(str(image_data[0]) + "\n" + str(prev_image[0]))
             # Multiply by earth radius to convert to kilometers
             distance = haversine_distances([image_data[0], prev_image[0]])[0][1] * EARTH_RADIUS
             time = timedelta.total_seconds(image_data[1] - prev_image[1])
             speed = distance/time
             total_speed += speed
-            print(total_speed/(images_taken-1))
-            write_data(total_speed, images_taken)
+
+            avg_speed = calculate_average_speed(total_speed, images_taken)
+            logger.info("Distance: " + str(distance))
+            logger.info("Time: " + str(time))
+            logger.info("Speed: " + str(speed))
+            logger.info("Total Speed: " + str(total_speed))
+            logger.info("Average Speed: " + str(avg_speed))
+            logger.info("Velocities recorded: " + str(images_taken-1))
+            
+            write_data(avg_speed)
 
         prev_image = image_data
 
@@ -93,13 +103,20 @@ def dms_to_rad(dms):
     rad = radians(d + float(m)/60 + float(s)/3600)
     return rad
 
-def write_data(total_speed: int, images_taken: int):
+def write_data(avg_speed: float):
     """
-    Formats result to 5 significant figures
+    Formats result to 5 significant figures and writes to result file
     """
     with open("result.txt", "w", buffering=1) as results:
-        result=total_speed/(images_taken-1)
-        results.write("{:.4f}".format(result))
+        results.write("{:.4f}".format(avg_speed))
+
+def calculate_average_speed(total_speed: float, images_taken: float):
+    """
+    Calculates overall average speed given total of speed calculated before and number of images taken
+    """
+    # -1 from images taken because the first image had no velocity calculated
+    average_speed=total_speed/(images_taken-1)
+    return average_speed
 
 def get_gps_coordinates(iss):
     """
