@@ -3,6 +3,7 @@ from time import sleep
 from exif import Image
 from math import radians
 from logzero import logger, logfile
+from pathlib import Path
 
 from picamzero import Camera # type: ignore
 # from astro_pi_orbit import ISS
@@ -13,6 +14,7 @@ from sklearn.metrics.pairwise import haversine_distances
 
 # Constant value
 EARTH_RADIUS = 6371
+BASE_FOLDER = Path.home()
 
 def main():
     # Create a variable to store the start time
@@ -22,7 +24,7 @@ def main():
     now_time = datetime.now()
 
     # Set up a logfile to store logs
-    logfile("./logfile.log")
+    logfile(BASE_FOLDER / "./logfile.log")
 
     cam = Camera()
     iss = ISS()
@@ -36,8 +38,7 @@ def main():
     # Core timed 10 minute loop
     # Ensures program operates within time and photo limits
     while now_time < start_time +  timedelta(minutes=10) and images_taken <= 41:
-        # file_name = BASE_FOLDER + ("\\image%s.jpg" % str(images_taken))
-        file_name = ".\\image%s.jpg" % str(images_taken)
+        file_name = BASE_FOLDER / ("image%s.jpg" % str(images_taken))
         logger.info(file_name)
         # Assign GPS coordinates of ISS to image we are taking
         cam.take_photo(file_name, gps_coordinates=get_gps_coordinates(iss))
@@ -55,7 +56,7 @@ def main():
 
             avg_speed = calculate_average_speed(total_speed, images_taken)
             logger.info("Distance: " + str(distance))
-            logger.info("Time: " + str(time))
+            logger.info("Time Betwen Pictures: " + str(time))
             logger.info("Speed: " + str(speed))
             logger.info("Total Speed: " + str(total_speed))
             logger.info("Average Speed: " + str(avg_speed))
@@ -65,9 +66,11 @@ def main():
 
         prev_image = image_data
 
-        # Waiting a second should improve accuracy by taking more spread out readings
-        sleep(1)
+        # Waiting should improve accuracy by taking more spread out readings
+        sleep(5)
+
         now_time = datetime.now()
+        logger.info("Time: " + str(now_time))
 
 def extract_image_data(absolute_path: str, return_coords: bool = True, return_time: bool = True):
     """
@@ -83,7 +86,6 @@ def extract_image_data(absolute_path: str, return_coords: bool = True, return_ti
             coords = [latitude, longitude]
             # Coords were stored in dms. This needs to be converted to radians for the haversine formula
             return_values.append([dms_to_rad(_) for _ in coords])
-            print(return_values)
 
         if return_time:
             time_str = img.get("datetime_original")
@@ -107,7 +109,7 @@ def write_data(avg_speed: float):
     """
     Formats result to 5 significant figures and writes to result file
     """
-    with open("result.txt", "w", buffering=1) as results:
+    with open(BASE_FOLDER / "result.txt", "w", buffering=1) as results:
         results.write("{:.4f}".format(avg_speed))
 
 def calculate_average_speed(total_speed: float, images_taken: float):
